@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# FastF1 cache
+cache/
+
+# IntelliJ / Java
+.idea/
+*.iml
+out/
+
+# Generated runtime files
+input.json
+output.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Old testing / development files
+Java_calculus optimization/src/JacksonTest.java
+Java_calculus optimization/src/JsonTest.java
+Java_calculus optimization/src/Testing_racetime.java
+Java_calculus optimization/test_connection.py
+Python_Data_Processing/Old_regression.py
+
+# Old Java implementation
+Java_calculus optimization/src/Strategy.java
