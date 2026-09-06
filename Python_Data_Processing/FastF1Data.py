@@ -173,7 +173,8 @@ def run_optimizer(constants, pit_time_lost, total_laps, excluded_compound):
     result = subprocess.run(
         [java, "-classpath", classpath, "Strategy_Bruteforce"],
         capture_output=True,
-        text=True
+        text=True,
+        cwd=RUNTIME_DIR
     )
 
     if result.stderr:
@@ -186,7 +187,6 @@ def run_optimizer(constants, pit_time_lost, total_laps, excluded_compound):
     return results
 
 def run_program(driver, race, year, pit_time_lost, total_laps, min_stint_length):
-
 
     data, compounds = get_driver_data(driver, race, year)
 
@@ -221,4 +221,3 @@ def run_program(driver, race, year, pit_time_lost, total_laps, min_stint_length)
     results = run_optimizer(constants, pit_time_lost, total_laps, excluded_compound)
 
     return results
-
