@@ -16,14 +16,6 @@ public class Strategy_Bruteforce {
 
         mapper.writeValue(new File("output.json"), final_list);
 
-        /*
-        int i = 1;
-        for (String[] idea : final_list) {
-            System.out.print(i + ":");
-            System.out.println(Arrays.toString(idea));
-            i++;
-        }
-        */
     }
 
 

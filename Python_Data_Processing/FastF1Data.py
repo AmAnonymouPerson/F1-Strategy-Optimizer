@@ -4,26 +4,22 @@ import pandas as pd
 import regression
 import json
 import subprocess
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+JAVA_DIR = PROJECT_ROOT / "Java_calculus optimization"
+JAVA_OUT = JAVA_DIR / "out"
+JAVA_LIB = JAVA_DIR / "lib"
+RUNTIME_DIR = PROJECT_ROOT
 
 
 logging.getLogger('fastf1').setLevel(logging.WARNING)
 fastf1.Cache.enable_cache('cache')
 
-#year = 2025
-#race = 'Abu Dhabi'
-#driver = 'VER'
-#pit_time_lost = 21.93
-#total_laps = 58
-#min_stint_length = 5
-
-
 practice_sessions = ['FP1', 'FP2', 'FP3']
 tyres = ['SOFT', 'MEDIUM', 'HARD']
 
-
-
 degree = 2
-
 
 def load_session(year, race, session_name):
     try:
@@ -41,8 +37,6 @@ def get_driver_data(driver, race, year):
 
     used_compounds = set()
 
-    # session_laps_map = {}
-
     combined_df = pd.DataFrame()
 
     for session_name in practice_sessions:
@@ -56,8 +50,6 @@ def get_driver_data(driver, race, year):
 
         if laps.empty:
             continue
-
-        # session_laps_map[session_name] = laps
 
         used_compounds.update(get_used_compounds(laps, tyres))
 
@@ -148,17 +140,35 @@ def run_optimizer(constants, pit_time_lost, total_laps, excluded_compound):
         "excluded_compound": excluded_compound
     }
 
-    with open("input.json", "w") as file:
+    with open(RUNTIME_DIR / "input.json", "w") as file:
         json.dump(input_data, file, indent=2)
 
-    java = r"C:\Program Files\Java\jdk-23\bin\java.exe"
+    java = "java"
 
     classpath = (
-        r"C:\Users\DELL\IdeaProjects\Formula_1\out\production\Formula_1;"
-        r"C:\Users\DELL\IdeaProjects\Formula_1\lib\jackson-annotations-2.21.jar;"
-        r"C:\Users\DELL\IdeaProjects\Formula_1\lib\jackson-core-2.21.1.jar;"
-        r"C:\Users\DELL\IdeaProjects\Formula_1\lib\jackson-databind-2.21.1.jar"
+            str(JAVA_OUT)
+            + ";"
+            + str(JAVA_LIB / "jackson-annotations-2.21.jar")
+            + ";"
+            + str(JAVA_LIB / "jackson-core-2.21.1.jar")
+            + ";"
+            + str(JAVA_LIB / "jackson-databind-2.21.1.jar")
     )
+
+    compile_result = subprocess.run(
+        [
+            "javac",
+            "-cp", str(JAVA_LIB / "*"),
+            str(JAVA_DIR / "src" / "InputData.java"),
+            str(JAVA_DIR / "src" / "Strategy_Bruteforce.java"),
+            "-d", str(JAVA_OUT)
+        ],
+        capture_output=True,
+        text=True
+    )
+
+    if compile_result.returncode != 0:
+        raise RuntimeError(f"Java compilation failed:\n{compile_result.stderr}")
 
     result = subprocess.run(
         [java, "-classpath", classpath, "Strategy_Bruteforce"],
@@ -170,7 +180,7 @@ def run_optimizer(constants, pit_time_lost, total_laps, excluded_compound):
         print("ERROR:")
         print(result.stderr)
 
-    with open("output.json", "r") as file:
+    with open(RUNTIME_DIR / "output.json", "r") as file:
         results = json.load(file)
 
     return results
@@ -211,6 +221,4 @@ def run_program(driver, race, year, pit_time_lost, total_laps, min_stint_length)
     results = run_optimizer(constants, pit_time_lost, total_laps, excluded_compound)
 
     return results
-
-print(get_driver_data('VER', "Azerbaijan", 2025))
 
